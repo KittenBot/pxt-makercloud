@@ -143,7 +143,7 @@ namespace Makercloud_Kitten {
         }
     })
 
-    //% shim=kittenwifi::setSerialBuffer
+    //% shim=Makercloud_Kitten::setSerialBuffer
     function setSerialBuffer(size: number): void {
         return null;
     }

@@ -3,7 +3,7 @@
 
 using namespace std;
 
-namespace makercloud {
+namespace Makercloud_Kitten {
 
     //%
     void setSerialBuffer(int size) {
@@ -13,4 +13,4 @@ namespace makercloud {
     
     
     
-} // namespace makercloud
+} // namespace Makercloud_Kitten
