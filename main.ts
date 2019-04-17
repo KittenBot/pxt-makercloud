@@ -113,6 +113,7 @@ namespace Makercloud_Kitten {
             let data = trim(seekNext(false));
             let makerCloudMessage = parseMakerCloudMessage(data);
             handleTopicStringMessage(topic, makerCloudMessage.stringMessageList);
+            handleTopicKeyValueMessage(topic, makerCloudMessage.keyValueMessagList)
             //if (mqttCbTopicData) {
             //    mqttCbTopicData(topic, data)
             //}
@@ -367,17 +368,6 @@ namespace Makercloud_Kitten {
                 }
                 break
             }
-        }
-    }
-
-    function onDataReceivedHandler(): void {
-        let response = serial.readUntil("\r")
-        let prefix = response.substr(0, 7)
-        if (prefix == "|4|1|5|") {
-            let message: string[] = splitMessageOnFirstDelimitor(response.substr(7, response.length - 1), "|")
-            let makerCloudMessage = parseMakerCloudMessage(message[1]);
-            handleTopicStringMessage(message[0], makerCloudMessage.stringMessageList)
-            handleTopicKeyValueMessage(message[0], makerCloudMessage.keyValueMessagList)
         }
     }
 
