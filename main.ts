@@ -113,9 +113,10 @@ namespace Makercloud_Kitten {
             let data = trim(seekNext(false));
             let makerCloudMessage = parseMakerCloudMessage(data);
             handleTopicStringMessage(topic, makerCloudMessage.stringMessageList);
-            //if (mqttCbTopicData) {
-            //    mqttCbTopicData(topic, data)
-            //}
+            handleTopicKeyValueMessage(topic, makerCloudMessage.keyValueMessagList);
+            // if (mqttCbTopicData) {
+            //     mqttCbTopicData(topic, data)
+            // }
         } else if (Callback.MQTT_CONN == cb) {
             // resubscribe?
             //for (let i = 0; i < mqttCbCnt; i++) {
@@ -125,34 +126,13 @@ namespace Makercloud_Kitten {
         }
     }
 
-    let v: string;
-    serial.onDataReceived('\n', function () {
-        v = serial.readString()
-        let argv: string[] = []
 
-        if (v.charAt(0) == 'W' && v.charAt(1) == 'F') {
-            v = v.substr(3, v.length - 3) + ' '
-            let cmd = parseInt(seekNext())
-            let argc = parseInt(seekNext())
-            let cb = parseInt(seekNext())
-
-            //  todo: is there an async way to handle response value?
-            if (cmd == CMD_RESP_CB) {
-                parseCallback(cb)
-            }
-        }
-    })
-
-    //% shim=Makercloud_Kitten::setSerialBuffer
-    function setSerialBuffer(size: number): void {
-        return null;
-    }
 
     /**
      * @param SSID to SSID ,eg: "yourSSID"
      * @param PASSWORD to PASSWORD ,eg: "yourPASSWORD"
      */
-    //% blockId=mc_df_wifi_setup
+    //% blockId=mc_kt_wifi_setup
     //% block="connect Wi-Fi: | name: %ssid| password: %password"
     export function setupWifi(ssid: string, password: string) {
         let cmd: string = 'WF 52 2 52 ' + ssid + ' ' + password + '\n'
@@ -163,7 +143,7 @@ namespace Makercloud_Kitten {
     /**
      * For testing purpose
      */
-    //% blockId=mc_df_change_to_sit
+    //% blockId=mc_kt_change_to_sit
     //% block="Maker Cloud Lab"
     //% advanced=true
     export function changeToSitServer() {
@@ -173,12 +153,20 @@ namespace Makercloud_Kitten {
     /**
      * Configuration RX TX Pin
      */
-    //% blockId=mc_df_config_rxtx
+    //% blockId=mc_kt_config_rxtx
     //% block="Update Pin: | RX: %rx| TX: %tx"
     //% advanced=true
     export function configRxTxPin(rx: SerialPin, tx: SerialPin) {
         SERIAL_TX = tx
         SERIAL_RX = rx
+    }
+
+    //% blockId=mc_kt_config_pwbrick
+    //% block="Update Pin powerbrick Port|%port"
+    //% advanced=true
+    export function configRxTxPwbrick(port: SerialPorts): void {
+        SERIAL_TX = PortSerial[port][1]
+        SERIAL_RX = PortSerial[port][0]
     }
 
     export function showLoading(time: number) {
@@ -234,7 +222,7 @@ namespace Makercloud_Kitten {
      * @param topic ,eg: "topic"
      * @param message ,eg: "message"
      */
-    //% blockId=mc_df_publish_message_to_topic
+    //% blockId=mc_kt_publish_message_to_topic
     //% block="tell %topic about %message"
     //% advance=true
     export function publishToTopic(topic: string, message: string) {
@@ -249,7 +237,7 @@ namespace Makercloud_Kitten {
      * @param key ,eg: "key"
      * @param value ,eg: "value"
      */
-    //% blockId=mc_df_publish_key_value_message_to_topic
+    //% blockId=mc_kt_publish_key_value_message_to_topic
     //% block="tell %topic about %key = $value"
     //% advance=true
     export function publishKeyValueToTopic(topic: string, key: string, value: string) {
@@ -262,7 +250,7 @@ namespace Makercloud_Kitten {
     /**
      * Connect your device to MQTT Server
      */
-    //% blockId=mc_df_connect_mqtt
+    //% blockId=mc_kt_connect_mqtt
     //% block="connect mqtt"
     export function connectMqtt() {
         let cmd: string = 'WF 15 2 15 ' + SERVER + ' ' + control.deviceName() + '\n'
@@ -278,7 +266,7 @@ namespace Makercloud_Kitten {
      * Subscribe to MQTT topic
      * @param topics to topics ,eg: "ZXY,ABC"
      */
-    //% blockId=mc_df_subscribe_topic
+    //% blockId=mc_kt_subscribe_topic
     //% block="i want to listen to %topics"
     export function subscrbeTopic(topics: string) {
         let topicList = splitMessage(topics, ",")
@@ -295,7 +283,7 @@ namespace Makercloud_Kitten {
      * Listener for MQTT topic
      * @param topic to topic ,eg: "ZXY"
      */
-    //% blockId=mc_df_register_topic_text_message_handler
+    //% blockId=mc_kt_register_topic_text_message_handler
     //% block="When something talk to %topic, then"
     export function registerTopicMessageHandler(topic: string, fn: (textMessage: string) => void) {
         let topicHandler = new StringMessageHandler()
@@ -308,13 +296,16 @@ namespace Makercloud_Kitten {
      * Listener for MQTT topic
      * @param topic to topic ,eg: "ZXY"
      */
-    //% blockId=mc_df_register_topic_key_value_message_handler
+    //% blockId=mc_kt_register_topic_key_value_message_handler
     //% block="When something talk to %topic, then"
     export function registerTopicKeyValueMessageHandler(topic: string, fn: (key: string, value: string) => void) {
         let topicHandler = new KeyValueMessageHandler()
         topicHandler.fn = fn
         topicHandler.topicName = topic
         keyValueMessageHandlerList.push(topicHandler)
+
+
+
     }
 
 
@@ -324,7 +315,7 @@ namespace Makercloud_Kitten {
      * @param IOT_TOPIC to IOT_TOPIC ,eg: "yourIotTopic"
      */
     //% weight=102
-    //% blockId=mc_df_init
+    //% blockId=mc_kt_init
     //% block="Initialise Maker Cloud"
     export function init() {
         serial.redirect(
@@ -334,7 +325,8 @@ namespace Makercloud_Kitten {
         )
 
         basic.pause(500)
-        setSerialBuffer(64);
+        serial.setRxBufferSize(64);
+        serial.setTxBufferSize(64);
         serial.readString()
         serial.writeString('\n\n')
         basic.pause(1000)
@@ -342,7 +334,25 @@ namespace Makercloud_Kitten {
         basic.pause(1000)
         serial.writeString("WF 10 4 0 2 3 4 5\n") // mqtt callback install
         basic.pause(1000)
+
+        serial.onDataReceived('\n', function () {
+            v = serial.readString()
+            let argv: string[] = []
+
+            if (v.charAt(0) == 'W' && v.charAt(1) == 'F') {
+                v = v.substr(3, v.length - 3) + ' '
+                let cmd = parseInt(seekNext())
+                let argc = parseInt(seekNext())
+                let cb = parseInt(seekNext())
+
+                //  todo: is there an async way to handle response value?
+                if (cmd == CMD_RESP_CB) {
+                    parseCallback(cb)
+                }
+            }
+        })
     }
+
 
     function handleTopicStringMessage(topic: string, stringMessageList: string[]) {
         let i = 0
@@ -367,17 +377,6 @@ namespace Makercloud_Kitten {
                 }
                 break
             }
-        }
-    }
-
-    function onDataReceivedHandler(): void {
-        let response = serial.readUntil("\r")
-        let prefix = response.substr(0, 7)
-        if (prefix == "|4|1|5|") {
-            let message: string[] = splitMessageOnFirstDelimitor(response.substr(7, response.length - 1), "|")
-            let makerCloudMessage = parseMakerCloudMessage(message[1]);
-            handleTopicStringMessage(message[0], makerCloudMessage.stringMessageList)
-            handleTopicKeyValueMessage(message[0], makerCloudMessage.keyValueMessagList)
         }
     }
 
