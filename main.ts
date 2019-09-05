@@ -113,10 +113,10 @@ namespace Makercloud_Kitten {
             let data = trim(seekNext(false));
             let makerCloudMessage = parseMakerCloudMessage(data);
             handleTopicStringMessage(topic, makerCloudMessage.stringMessageList);
-            handleTopicKeyValueMessage(topic, makerCloudMessage.keyValueMessagList);
-            // if (mqttCbTopicData) {
-            //     mqttCbTopicData(topic, data)
-            // }
+            handleTopicKeyValueMessage(topic, makerCloudMessage.keyValueMessagList)
+            //if (mqttCbTopicData) {
+            //    mqttCbTopicData(topic, data)
+            //}
         } else if (Callback.MQTT_CONN == cb) {
             // resubscribe?
             //for (let i = 0; i < mqttCbCnt; i++) {
