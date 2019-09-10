@@ -54,6 +54,7 @@ namespace Makercloud_Kitten {
     let SIT_SERVER = "mqtt.makercloud-sit.scaleinnotech.com"
     let SERVER = PROD_SERVER
     let ipAddr: string = '';
+    let v: string;
 
     let stringMessageHandlerList: StringMessageHandler[] = []
     let keyValueMessageHandlerList: KeyValueMessageHandler[] = []
@@ -308,6 +309,23 @@ namespace Makercloud_Kitten {
 
     }
 
+    serial.onDataReceived('\n', function () {
+        v = serial.readString()
+        let argv: string[] = []
+
+        if (v.charAt(0) == 'W' && v.charAt(1) == 'F') {
+            v = v.substr(3, v.length - 3) + ' '
+            let cmd = parseInt(seekNext())
+            let argc = parseInt(seekNext())
+            let cb = parseInt(seekNext())
+
+            //  todo: is there an async way to handle response value?
+            if (cmd == CMD_RESP_CB) {
+                parseCallback(cb)
+            }
+        }
+    })
+
 
     /**
      * @param SSID to SSID ,eg: "yourSSID"
@@ -333,24 +351,6 @@ namespace Makercloud_Kitten {
         serial.writeString("WF 1 0 1\n") // sync command to add wifi status callback
         basic.pause(1000)
         serial.writeString("WF 10 4 0 2 3 4 5\n") // mqtt callback install
-        basic.pause(1000)
-
-        serial.onDataReceived('\n', function () {
-            v = serial.readString()
-            let argv: string[] = []
-
-            if (v.charAt(0) == 'W' && v.charAt(1) == 'F') {
-                v = v.substr(3, v.length - 3) + ' '
-                let cmd = parseInt(seekNext())
-                let argc = parseInt(seekNext())
-                let cb = parseInt(seekNext())
-
-                //  todo: is there an async way to handle response value?
-                if (cmd == CMD_RESP_CB) {
-                    parseCallback(cb)
-                }
-            }
-        })
     }
 
 
