@@ -1,6 +1,6 @@
 {
     "name": "makercloud",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "description": "mqtt communication to makercloud with kittenbot's wifi module",
     "license": "MIT",
     "dependencies": {

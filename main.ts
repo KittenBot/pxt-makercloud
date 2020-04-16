@@ -56,9 +56,6 @@ namespace Makercloud_Kitten {
     let ipAddr: string = '';
     let v: string;
 
-    let stringMessageHandlerList: StringMessageHandler[] = []
-    let keyValueMessageHandlerList: KeyValueMessageHandler[] = []
-
     export class StringMessageHandler {
         topicName: string;
         fn: (stringMessage: string) => void;
@@ -68,6 +65,14 @@ namespace Makercloud_Kitten {
         topicName: string;
         fn: (key: string, value: string) => void;
     }
+
+    let stringMessageHandlerList: StringMessageHandler[] = [
+        new StringMessageHandler()
+    ]
+    let keyValueMessageHandlerList: KeyValueMessageHandler[] = [
+        new KeyValueMessageHandler()
+    ]
+
 
     export class KeyValueMessage {
         key: string;
